@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive introduction to alpha-beta pruning and adversarial game search.">
+  <title>Susan Zehra's Alpha-Beta Search Challenge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Interactive AI Search Game</p>
+      <h1>Susan Zehra’s<br><span>Alpha-Beta Search Challenge</span></h1>
+      <p>Search smarter, prune branches that cannot matter, and test your strategy against an alpha-beta opponent.</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="root-bubble">MAX</div>
+      <div class="branch one"></div><div class="branch two"></div>
+      <div class="mini-bubble left">α</div><div class="mini-bubble right">β</div>
+      <div class="prune-mark">✂</div>
+    </div>
+  </header>
+
+  <main>
+    <section id="welcome" class="card welcome-card">
+      <span class="kicker">Before you begin</span>
+      <h2>Enter your name</h2>
+      <p>Your name will appear on the completion certificate.</p>
+      <form id="nameForm">
+        <label for="studentName">Name</label>
+        <div class="name-row">
+          <input id="studentName" maxlength="70" autocomplete="name" placeholder="Enter your full name" required>
+          <button class="primary" type="submit">Start Challenge →</button>
+        </div>
+        <p id="nameError" class="error" role="alert"></p>
+      </form>
+      <p class="privacy"><strong>Privacy:</strong> Nothing is stored or transmitted. Your name is used only in this browser to personalize the completion certificate.</p>
+    </section>
+
+    <section id="game" hidden>
+      <div class="progress-card">
+        <div><span id="progressText">Question 1 of 5</span><strong id="playerGreeting"></strong></div>
+        <div class="progress-track"><div id="progressBar"></div></div>
+      </div>
+
+      <section id="question1" class="question">
+        <div class="scenario card"><div><span class="kicker coral">Question 1 · Know the search roles</span><h2>What do MAX, MIN, alpha, and beta mean?</h2><p>Drag each label to the correct description.</p></div><div class="formula">α = MAX bound<br>β = MIN bound</div></div>
+        <div class="activity-grid">
+          <aside class="card lesson"><h3>Quick concept review</h3><ul><li><b>MAX</b> wants larger utility values.</li><li><b>MIN</b> wants smaller utility values.</li><li><b>Alpha</b> records MAX’s best guaranteed value so far.</li><li><b>Beta</b> records MIN’s best guaranteed value so far.</li></ul><div class="tip">The search can stop exploring a branch when <b>α ≥ β</b>.</div></aside>
+          <div class="card workspace">
+            <div class="token-bank" data-bank="q1">
+              <button class="drag-token blue" draggable="true" data-value="MAX">MAX</button>
+              <button class="drag-token orange" draggable="true" data-value="MIN">MIN</button>
+              <button class="drag-token green" draggable="true" data-value="ALPHA">Alpha (α)</button>
+              <button class="drag-token purple" draggable="true" data-value="BETA">Beta (β)</button>
+            </div>
+            <div class="definition-grid">
+              <div><span>Chooses the largest value</span><div class="drop-slot" data-answer="MAX">Drop label</div></div>
+              <div><span>Chooses the smallest value</span><div class="drop-slot" data-answer="MIN">Drop label</div></div>
+              <div><span>Best value guaranteed to MAX so far</span><div class="drop-slot" data-answer="ALPHA">Drop label</div></div>
+              <div><span>Best value guaranteed to MIN so far</span><div class="drop-slot" data-answer="BETA">Drop label</div></div>
+            </div>
+            <div class="actions"><button class="secondary reset" data-question="1">Reset</button><button id="checkQ1" class="primary">Check Answer</button></div>
+            <p id="feedback1" class="feedback" role="status">Drag each label to its description. You can also click a label and then click a slot.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="question2" class="question" hidden>
+        <div class="scenario card"><div><span class="kicker purple">Question 2 · Apply the cutoff rule</span><h2>Prune or continue?</h2><p>For each search situation, decide whether the remaining branch can be safely ignored.</p></div><div class="formula">Prune when<br><b>α ≥ β</b></div></div>
+        <div class="card workspace">
+          <div class="cutoff-grid">
+            <article class="cutoff-card" data-answer="prune"><h3>Situation A</h3><p>α = 6 and β = 4</p><div><button data-choice="continue">Continue</button><button data-choice="prune">Prune</button></div></article>
+            <article class="cutoff-card" data-answer="continue"><h3>Situation B</h3><p>α = 3 and β = 8</p><div><button data-choice="continue">Continue</button><button data-choice="prune">Prune</button></div></article>
+            <article class="cutoff-card" data-answer="prune"><h3>Situation C</h3><p>α = 5 and β = 5</p><div><button data-choice="continue">Continue</button><button data-choice="prune">Prune</button></div></article>
+            <article class="cutoff-card" data-answer="continue"><h3>Situation D</h3><p>α = 2 and β = 7</p><div><button data-choice="continue">Continue</button><button data-choice="prune">Prune</button></div></article>
+          </div>
+          <div class="actions"><button id="resetQ2" class="secondary">Reset</button><button id="checkQ2" class="primary">Check All Four</button></div>
+          <p id="feedback2" class="feedback" role="status">Make one decision for each situation.</p>
+        </div>
+      </section>
+
+      <section id="question3" class="question" hidden>
+        <div class="scenario card"><div><span class="kicker green-text">Question 3 · Trace the search</span><h2>Alpha-Beta Tree Investigator</h2><p>Follow the correct search order and identify exactly when the final leaf becomes irrelevant.</p></div><div class="formula">Left to right<br>MAX → MIN</div></div>
+        <div class="activity-grid">
+          <aside class="card lesson"><h3>The tree</h3><div class="trace-tree"><div class="trace-root">MAX</div><div class="trace-mins"><span>MIN<br><b>3, 5</b></span><span>MIN<br><b>2, 9</b></span></div></div><p>Search successors from left to right. The value 9 may or may not need to be examined.</p><div class="tip">After the left MIN branch returns 3, the root’s alpha becomes 3.</div></aside>
+          <div class="card workspace">
+            <div class="trace-status"><span>Step</span><strong id="traceStep">1 of 7</strong></div>
+            <h3 id="tracePrompt"></h3>
+            <div id="traceChoices" class="trace-choices"></div>
+            <div class="trace-log"><h3>Search log</h3><ol id="traceLog"><li>Search has not started.</li></ol></div>
+            <div class="actions"><button id="restartTrace" class="secondary">Restart Trace</button></div>
+            <p id="feedback3" class="feedback" role="status">Choose the correct action at each step.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="question4" class="question" hidden>
+        <div class="scenario card"><div><span class="kicker gold-text">Question 4 · Improve move ordering</span><h2>The Pruning Race</h2><p>Reorder the four branches so the strongest move is searched early and more later leaves can be pruned.</p></div><div class="formula">Better ordering<br>less search</div></div>
+        <div class="activity-grid">
+          <aside class="card lesson"><h3>How scoring works</h3><p>Each card is a MIN branch. Its two numbers are terminal utilities examined from left to right.</p><ul><li>MIN keeps the smaller value.</li><li>MAX updates alpha after each branch.</li><li>A later MIN branch is cut off as soon as β ≤ α.</li></ul><div class="tip">Your target is to prune at least <b>three leaves</b>.</div></aside>
+          <div class="card workspace">
+            <div id="orderingLane" class="ordering-lane"></div>
+            <p class="move-instruction">Drag cards—or use the arrow buttons—to change the search order.</p>
+            <div class="ordering-results"><div><span>Leaves evaluated</span><strong id="orderedVisited">—</strong></div><div><span>Leaves pruned</span><strong id="orderedPruned">—</strong></div><div><span>Work saved</span><strong id="orderedPercent">—</strong></div></div>
+            <div class="actions"><button id="resetOrdering" class="secondary">Reset Order</button><button id="runOrdering" class="primary">Run Alpha-Beta Search</button></div>
+            <p id="feedback4" class="feedback" role="status">Put the branches in an order that produces at least three cutoffs.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="question5" class="question" hidden>
+        <div class="scenario card arena-scenario"><div><span class="kicker coral">Question 5 · Advanced game</span><h2>Orbital Connect Arena</h2><p>You are MAX. Drop a blue token into a column. The computer is MIN and uses depth-limited minimax with alpha-beta pruning.</p></div><div class="formula">Level 1: Connect 3<br>Level 2: Connect 4</div></div>
+        <div class="activity-grid wide-lesson">
+          <aside class="card lesson"><h3>Rules</h3><ol><li>Tokens fall to the lowest open space.</li><li>Build the required horizontal, vertical, or diagonal line.</li><li>Win or force a draw to clear each level.</li><li>Complete both levels to earn the certificate.</li></ol><div class="tip"><strong>Watch the statistics:</strong> the computer reports explored nodes and alpha-beta cutoffs after every move.</div><div class="arena-levels"><span id="arenaLevelOne" class="active">Training</span><span id="arenaLevelTwo">Orbital</span></div></aside>
+          <div class="card workspace arena-workspace">
+            <div class="arena-status"><div><span>Level</span><strong id="arenaLevelLabel">Training Arena</strong></div><div><span>Turn</span><strong id="arenaTurn">Your turn · MAX</strong></div><div><span>Search depth</span><strong id="arenaDepth">6</strong></div></div>
+            <div id="columnButtons" class="column-buttons"></div>
+            <div id="connectBoard" class="connect-board" aria-label="Orbital Connect board"></div>
+            <div class="search-stats"><div><span>Nodes evaluated</span><strong id="searchNodes">0</strong></div><div><span>Branches pruned</span><strong id="searchPrunes">0</strong></div><div><span>Best score</span><strong id="searchScore">—</strong></div></div>
+            <div class="actions"><button id="restartArena" class="secondary">↻ Restart Level</button></div>
+            <p id="feedback5" class="feedback" role="status">You move first. Select a column for your blue token.</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="success" class="card certificate" hidden>
+      <div class="stars">★ · ★ · ★</div>
+      <p class="certificate-kicker">Certificate of Completion</p>
+      <h2>Susan Zehra’s Alpha-Beta Search Challenge</h2>
+      <p>This certifies that</p>
+      <div id="certificateName" class="certificate-name"></div>
+      <p>successfully applied <b>alpha-beta pruning, move ordering, and adversarial game-search strategy</b>.</p>
+      <div class="certificate-details"><div><span>Completed</span><b id="certificateDate"></b></div><div><span>Advanced challenge</span><b>Completed both Orbital Connect levels</b></div></div>
+      <p class="success-note">✓ Completed all five interactive challenges</p>
+      <div class="actions no-print"><button id="printButton" class="primary">Print / Save as PDF</button><button id="playAgain" class="secondary">Play Again</button></div>
+    </section>
+  </main>
+
+  <footer>Designed as an interactive introduction to efficient adversarial search.<br>Copyright © 2026 Susan Zehra. All rights reserved.</footer>
+  <script src="script.js"></script>
+</body>
+</html>
