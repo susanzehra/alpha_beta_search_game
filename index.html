@@ -40,7 +40,7 @@
 
     <section id="game" hidden>
       <div class="progress-card">
-        <div><span id="progressText">Question 1 of 5</span><strong id="playerGreeting"></strong></div>
+        <div><span id="progressText">Question 1 of 7</span><strong id="playerGreeting"></strong></div>
         <div class="progress-track"><div id="progressBar"></div></div>
       </div>
 
@@ -124,6 +124,36 @@
           </div>
         </div>
       </section>
+
+      <section id="question6" class="question" hidden>
+        <div class="scenario card"><div><span class="kicker green-text">Question 6 · Pseudocode builder</span><h2>Level 1 — Build the Core Algorithm</h2><p>Select and arrange exactly seven lines to create clear, high-level alpha-beta pseudocode.</p></div><div class="formula">Choose 7 of 11<br>then order them</div></div>
+        <div class="activity-grid pseudocode-layout">
+          <aside class="card lesson"><h3>Your goal</h3><ul><li>Begin with the procedure.</li><li>Handle terminal states.</li><li>Explore children recursively.</li><li>Update the correct bound.</li><li>Apply the cutoff rule.</li><li>Return the best value.</li></ul><div class="tip">Some lines are believable but incorrect distractors.</div><button class="hint-button secondary" data-level="easy">Show a Hint</button></aside>
+          <div class="card workspace">
+            <h3>Available lines</h3><p class="move-instruction">Drag a line into the numbered solution area, or click it to add it.</p>
+            <div id="easyBank" class="code-bank"></div>
+            <h3 class="builder-heading">Your pseudocode <span id="easyCount">0 / 7 lines</span></h3>
+            <ol id="easyBuild" class="code-build" data-level="easy"></ol>
+            <div class="actions"><button class="secondary clear-code" data-level="easy">Clear</button><button class="primary check-code" data-level="easy">Check Pseudocode</button></div>
+            <p id="feedback6" class="feedback" role="status">Choose seven lines and place them in a logical order.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="question7" class="question" hidden>
+        <div class="scenario card"><div><span class="kicker purple">Question 7 · Advanced pseudocode</span><h2>Level 2 — Complete the Recursive Search</h2><p>Build a more detailed version that correctly handles both MAX and MIN while carrying alpha and beta through recursion.</p></div><div class="formula">Choose 7 of 13<br>MAX + MIN</div></div>
+        <div class="activity-grid pseudocode-layout">
+          <aside class="card lesson"><h3>Think carefully</h3><ul><li>MAX begins with −∞ and raises alpha.</li><li>MIN begins with +∞ and lowers beta.</li><li>Recursive calls alternate the player.</li><li>Both sides use the same cutoff rule.</li></ul><div class="tip">A line can contain several closely related operations so the complete solution still fits in seven lines.</div><button class="hint-button secondary" data-level="advanced">Show a Hint</button></aside>
+          <div class="card workspace">
+            <h3>Available lines</h3><p class="move-instruction">Select only the seven correct lines. Then arrange them from initialization to return.</p>
+            <div id="advancedBank" class="code-bank"></div>
+            <h3 class="builder-heading">Your pseudocode <span id="advancedCount">0 / 7 lines</span></h3>
+            <ol id="advancedBuild" class="code-build" data-level="advanced"></ol>
+            <div class="actions"><button class="secondary clear-code" data-level="advanced">Clear</button><button class="primary check-code" data-level="advanced">Check Pseudocode</button></div>
+            <p id="feedback7" class="feedback" role="status">Build the recursive MAX-and-MIN version.</p>
+          </div>
+        </div>
+      </section>
     </section>
 
     <section id="success" class="card certificate" hidden>
@@ -132,9 +162,9 @@
       <h2>Susan Zehra’s Alpha-Beta Search Challenge</h2>
       <p>This certifies that</p>
       <div id="certificateName" class="certificate-name"></div>
-      <p>successfully applied <b>alpha-beta pruning, move ordering, and adversarial game-search strategy</b>.</p>
-      <div class="certificate-details"><div><span>Completed</span><b id="certificateDate"></b></div><div><span>Advanced challenge</span><b>Completed both Orbital Connect levels</b></div></div>
-      <p class="success-note">✓ Completed all five interactive challenges</p>
+      <p>successfully applied <b>alpha-beta pruning, move ordering, adversarial game-search strategy, and recursive pseudocode construction</b>.</p>
+      <div class="certificate-details"><div><span>Completed</span><b id="certificateDate"></b></div><div><span>Game challenge</span><b>Completed both Orbital Connect levels</b></div><div><span>Pseudocode challenge</span><b>Completed both construction levels</b></div></div>
+      <p class="success-note">✓ Completed all seven interactive challenges</p>
       <div class="actions no-print"><button id="printButton" class="primary">Print / Save as PDF</button><button id="playAgain" class="secondary">Play Again</button></div>
     </section>
   </main>

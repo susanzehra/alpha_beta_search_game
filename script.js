@@ -9,12 +9,14 @@ function feedback(id, message, type = "") {
 }
 function showQuestion(n) {
   $$(".question").forEach((q, i) => q.hidden = i !== n - 1);
-  $("#progressText").textContent = `Question ${n} of 5`;
-  $("#progressBar").style.width = `${n * 20}%`;
+  $("#progressText").textContent = `Question ${n} of 7`;
+  $("#progressBar").style.width = `${n / 7 * 100}%`;
   window.scrollTo({ top: $("#game").offsetTop - 10, behavior: "smooth" });
   if (n === 3) renderTrace();
   if (n === 4) renderOrdering();
   if (n === 5 && !arena.board.length) startArenaLevel(0);
+  if (n === 6) renderCodeBuilder("easy");
+  if (n === 7) renderCodeBuilder("advanced");
 }
 
 $("#nameForm").addEventListener("submit", e => {
@@ -119,8 +121,75 @@ function alphaBeta(board,depth,alpha,beta,maximizing,cfg){arena.stats.nodes++;co
 function playerMove(col){if(arena.busy||arena.over)return;drop(arena.board,col,1);renderBoard();if(resolveArena(1))return;arena.busy=true;$("#arenaTurn").textContent="Computer thinking · MIN";renderBoard();setTimeout(aiMove,260);}
 function aiMove(){const cfg=levels[arena.level];arena.stats={nodes:0,prunes:0};let best=Infinity,bestCol=null;for(const c of orderedCols(arena.board)){const b=arena.board.map(r=>r.slice());drop(b,c,-1);const value=alphaBeta(b,cfg.depth-1,-Infinity,Infinity,true,cfg);if(value<best){best=value;bestCol=c;}}if(bestCol!==null)drop(arena.board,bestCol,-1);$("#searchNodes").textContent=arena.stats.nodes.toLocaleString();$("#searchPrunes").textContent=arena.stats.prunes.toLocaleString();$("#searchScore").textContent=Math.round(best);arena.busy=false;renderBoard();if(!resolveArena(-1))$("#arenaTurn").textContent="Your turn · MAX";}
 function resolveArena(last){const cfg=levels[arena.level],line=winningLine(arena.board,last,cfg.connect);if(line){arena.over=true;renderBoard(line);if(last===1){feedback("#feedback5","You built the connection! Level cleared.","good");return completeArenaLevel();}feedback("#feedback5","The alpha-beta opponent connected first. Study its threats and restart this level.","bad");$("#arenaTurn").textContent="Computer wins";return true;}if(!validCols(arena.board).length){arena.over=true;feedback("#feedback5","Draw secured — you successfully denied the opponent. Level cleared!","good");return completeArenaLevel();}return false;}
-function completeArenaLevel(){if(arena.level===0){$("#arenaTurn").textContent="Training complete";setTimeout(()=>startArenaLevel(1),1200);}else{$("#arenaTurn").textContent="Challenge complete";setTimeout(showCertificate,900);}return true;}
+function completeArenaLevel(){if(arena.level===0){$("#arenaTurn").textContent="Training complete";setTimeout(()=>startArenaLevel(1),1200);}else{$("#arenaTurn").textContent="Game complete · pseudocode next";setTimeout(()=>showQuestion(6),900);}return true;}
 $("#restartArena").addEventListener("click",()=>startArenaLevel(arena.level));
+
+// Questions 6 and 7: drag-and-drop pseudocode construction
+const codeChallenges = {
+  easy: {
+    bank: "#easyBank", build: "#easyBuild", count: "#easyCount", feedback: "#feedback6",
+    solution: ["e1","e2","e3","e4","e5","e6","e7"],
+    lines: {
+      e1:"PROCEDURE ALPHA-BETA(state, α, β, player)",
+      e2:"IF state is terminal: RETURN EVALUATE(state)",
+      e3:"SET best = −∞ for MAX, or +∞ for MIN",
+      e4:"FOR EACH child of state:",
+      e5:"    score = ALPHA-BETA(child, α, β, other player); UPDATE best",
+      e6:"    UPDATE α if MAX, or UPDATE β if MIN",
+      e7:"    IF α ≥ β: STOP loop; after loop RETURN best",
+      ex1:"IF α < β: PRUNE the remaining children",
+      ex2:"RESET α and β after every child",
+      ex3:"MAX always selects the smallest score",
+      ex4:"RETURN the first child without evaluating it"
+    },
+    hint:"Begin with the procedure and terminal-state test. The cutoff belongs near the end, after the bounds have been updated."
+  },
+  advanced: {
+    bank: "#advancedBank", build: "#advancedBuild", count: "#advancedCount", feedback: "#feedback7",
+    solution: ["a1","a2","a3","a4","a5","a6","a7"],
+    lines: {
+      a1:"ALPHA-BETA(state, depth, α, β, maximizingPlayer)",
+      a2:"IF depth = 0 OR state is terminal: RETURN EVALUATE(state)",
+      a3:"IF maximizingPlayer: value = −∞; FOR EACH child:",
+      a4:"    value = MAX(value, ALPHA-BETA(child, depth−1, α, β, FALSE)); α = MAX(α, value)",
+      a5:"ELSE: value = +∞; FOR EACH child:",
+      a6:"    value = MIN(value, ALPHA-BETA(child, depth−1, α, β, TRUE)); β = MIN(β, value)",
+      a7:"    IF α ≥ β: BREAK; after the selected loop RETURN value",
+      ax1:"At a MAX node, set value = +∞ and minimize it",
+      ax2:"At a MIN node, update α = MAX(α, value)",
+      ax3:"Call ALPHA-BETA without decreasing depth",
+      ax4:"IF α ≤ β: BREAK immediately",
+      ax5:"RESET α = −∞ and β = +∞ before every child",
+      ax6:"RETURN the sum of all child values"
+    },
+    hint:"The MAX block must be complete before the MIN block. MAX raises alpha; MIN lowers beta; both stop when alpha reaches beta."
+  }
+};
+const codeState = { easy: [], advanced: [] };
+const bankOrders = {};
+let draggedCode = null;
+function shuffledKeys(obj){const keys=Object.keys(obj);for(let i=keys.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[keys[i],keys[j]]=[keys[j],keys[i]];}return keys;}
+function renderCodeBuilder(level){
+  const cfg=codeChallenges[level], bank=$(cfg.bank), build=$(cfg.build), selected=codeState[level];
+  if(!bankOrders[level])bankOrders[level]=shuffledKeys(cfg.lines);
+  bank.innerHTML="";
+  bankOrders[level].forEach(id=>{const b=document.createElement("button");b.className=`code-line ${selected.includes(id)?"used":""}`;b.draggable=true;b.dataset.id=id;b.dataset.level=level;b.textContent=cfg.lines[id];const mark=document.createElement("span");mark.className="line-action";mark.textContent="+";b.append(mark);b.addEventListener("click",()=>addCodeLine(level,id));b.addEventListener("dragstart",()=>{draggedCode={level,id,from:"bank"};b.classList.add("dragging")});b.addEventListener("dragend",()=>b.classList.remove("dragging"));bank.append(b);});
+  build.innerHTML="";
+  build.addEventListener("dragover",e=>e.preventDefault());
+  build.ondrop=e=>{e.preventDefault();if(!draggedCode||draggedCode.level!==level)return;if(draggedCode.from==="bank")addCodeLine(level,draggedCode.id);else moveCodeLine(level,draggedCode.id,selected.length-1);};
+  selected.forEach((id,index)=>{const li=document.createElement("li");li.draggable=true;li.dataset.id=id;li.textContent=cfg.lines[id];li.addEventListener("dragstart",()=>{draggedCode={level,id,from:"build"};li.classList.add("dragging")});li.addEventListener("dragend",()=>li.classList.remove("dragging"));li.addEventListener("dragover",e=>e.preventDefault());li.addEventListener("drop",e=>{e.preventDefault();if(draggedCode?.level!==level)return;if(draggedCode.from==="bank"){if(selected.length>=7)return codeMessage(level,"The solution uses exactly seven lines. Remove one before adding another.","bad");const target=selected.indexOf(id);selected.splice(target,0,draggedCode.id);renderCodeBuilder(level);}else moveCodeLine(level,draggedCode.id,index);});const controls=document.createElement("span");controls.className="code-controls";[["↑",-1,"Move up"],["↓",1,"Move down"],["×",0,"Remove"]].forEach(([label,dir,title])=>{const c=document.createElement("button");c.type="button";c.textContent=label;c.title=title;if(label==="×")c.className="remove-code";c.addEventListener("click",()=>dir===0?removeCodeLine(level,id):moveCodeLine(level,id,index+dir));controls.append(c);});li.append(controls);build.append(li);});
+  $(cfg.count).textContent=`${selected.length} / 7 lines`;
+}
+function addCodeLine(level,id){const arr=codeState[level];if(arr.includes(id))return;if(arr.length>=7)return codeMessage(level,"The solution uses exactly seven lines. Remove one before adding another.","bad");arr.push(id);renderCodeBuilder(level);}
+function removeCodeLine(level,id){codeState[level]=codeState[level].filter(x=>x!==id);renderCodeBuilder(level);}
+function moveCodeLine(level,id,to){const arr=codeState[level],from=arr.indexOf(id);if(from<0||to<0||to>=arr.length)return;arr.splice(to,0,arr.splice(from,1)[0]);renderCodeBuilder(level);}
+function codeMessage(level,message,type=""){feedback(codeChallenges[level].feedback,message,type);}
+function clearCode(level){codeState[level]=[];renderCodeBuilder(level);codeMessage(level,level==="easy"?"Choose seven lines and place them in a logical order.":"Build the recursive MAX-and-MIN version.");}
+function checkCode(level){const cfg=codeChallenges[level],arr=codeState[level];$$("li",$(cfg.build)).forEach(li=>li.classList.remove("correct-position","wrong-position"));if(arr.length!==7)return codeMessage(level,"Your pseudocode must contain exactly seven lines.","bad");const exact=arr.every((id,i)=>id===cfg.solution[i]);$$("li",$(cfg.build)).forEach((li,i)=>li.classList.add(arr[i]===cfg.solution[i]?"correct-position":"wrong-position"));if(!exact){const correctLines=arr.filter(id=>cfg.solution.includes(id)).length;return codeMessage(level,`${correctLines} of your 7 selected lines belong in the solution. Green lines are already in the correct position; revise the red lines.`,"bad");}codeMessage(level,"Excellent! You built valid alpha-beta pseudocode in the correct order.","good");setTimeout(()=>level==="easy"?showQuestion(7):showCertificate(),1100);}
+$$(".clear-code").forEach(b=>b.addEventListener("click",()=>clearCode(b.dataset.level)));
+$$(".check-code").forEach(b=>b.addEventListener("click",()=>checkCode(b.dataset.level)));
+$$(".hint-button").forEach(b=>b.addEventListener("click",()=>codeMessage(b.dataset.level,codeChallenges[b.dataset.level].hint)));
+
 function showCertificate(){$("#game").hidden=true;$("#success").hidden=false;$("#certificateName").textContent=playerName;$("#certificateDate").textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"long",timeStyle:"short"}).format(new Date());window.scrollTo({top:0,behavior:"smooth"});}
 $("#printButton").addEventListener("click",()=>window.print());
-$("#playAgain").addEventListener("click",()=>{traceIndex=0;traceLog=[];order=["A","C","D","B"];arena.board=[];$("#success").hidden=true;$("#welcome").hidden=false;$("#game").hidden=true;$("#studentName").value="";resetQ1();window.scrollTo({top:0,behavior:"smooth"});});
+$("#playAgain").addEventListener("click",()=>{traceIndex=0;traceLog=[];order=["A","C","D","B"];arena.board=[];codeState.easy=[];codeState.advanced=[];delete bankOrders.easy;delete bankOrders.advanced;$("#success").hidden=true;$("#welcome").hidden=false;$("#game").hidden=true;$("#studentName").value="";resetQ1();window.scrollTo({top:0,behavior:"smooth"});});

@@ -1,12 +1,14 @@
 # Susan Zehra's Alpha-Beta Search Challenge
 
-A browser-based learning game that introduces alpha-beta pruning through five progressively harder activities:
+A browser-based learning game that introduces alpha-beta pruning through seven progressively harder activities:
 
 1. Match MAX, MIN, alpha, and beta to their meanings.
 2. Decide when a branch should be pruned.
 3. Trace a small alpha-beta search tree step by step.
 4. Reorder moves to increase the number of cutoffs.
 5. Play two levels of Orbital Connect against a depth-limited alpha-beta opponent.
+6. Build clear, high-level alpha-beta pseudocode from correct and distracting lines.
+7. Construct a more detailed recursive version that handles both MAX and MIN.
 
 The final screen provides a personalized completion certificate that can be printed or saved as a PDF.
 
